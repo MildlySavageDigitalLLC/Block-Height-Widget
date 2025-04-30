@@ -1,0 +1,110 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Block Height Widget</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400&display=swap');
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black; /* Black screen background */
+        }
+        #block-height {
+            font-size: 2.5rem;
+            color: white; /* White text color */
+            padding: 40px;
+            border: 5px solid green; /* Green circle */
+            border-radius: 50%; /* Make the border a circle */
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3); /* Add a glow effect to the circle */
+        }
+        #refresh-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3); /* Button glow effect */
+        }
+        #refresh-button:hover {
+            background-color: darkgreen;
+        }
+        #building-blocks {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 100px;
+            width: 200px;
+            position: relative;
+        }
+        .block {
+            width: 30px;
+            height: 30px;
+            background-color: green;
+            margin: 5px;
+            opacity: 0;
+            animation: build 1s ease-in-out forwards;
+        }
+        @keyframes build {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="block-height">Loading...</div>
+    <button id="refresh-button" onclick="manualRefresh()">Refresh</button>
+    <div id="building-blocks"></div> <!-- Animated building blocks -->
+    <script>
+        async function fetchBlockHeight() {
+            try {
+                const response = await fetch('https://mempool.space/api/blocks');
+                const blocks = await response.json();
+                const latestBlock = blocks[0]; // First block in the response
+                document.getElementById('block-height').textContent = `Block Height: ${latestBlock.height}`;
+            } catch (error) {
+                console.error('Error fetching block height:', error);
+                document.getElementById('block-height').textContent = 'Error fetching data.';
+            }
+        }
+
+        function showBuildingBlocks() {
+            const buildingBlocks = document.getElementById('building-blocks');
+            buildingBlocks.innerHTML = ''; // Clear any previous blocks
+
+            for (let i = 0; i < 6; i++) {
+                const block = document.createElement('div');
+                block.className = 'block';
+                block.style.animationDelay = `${i * 0.2}s`; // Stagger block animations
+                buildingBlocks.appendChild(block);
+            }
+        }
+
+        async function manualRefresh() {
+            showBuildingBlocks(); // Show building block animation
+            await fetchBlockHeight(); // Fetch new block height
+        }
+
+        // Fetch block height every 10 seconds
+        fetchBlockHeight();
+        setInterval(fetchBlockHeight, 10000);
+    </script>
+</body>
+</html>
